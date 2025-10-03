@@ -1,0 +1,9 @@
+1. update swagger
+2. update swagger docs with zod library (already installed)
+3. update the register is_admin schema its giving error (string error)
+4. check error logs if working or not
+5. Add rate limiter in all the apis
+6. Add role in all response sent
+7. Send only necessary information only in all api responses <-- important
+8. update code add snake_case <-- important
+9. Examine whole project and delete extra files <-- important
