@@ -9,10 +9,7 @@ import { SuccessMessages, ErrorMessages } from "../../common/messages.js";
 import Token from "../../models/Token.js";
 import { sendEmail } from "../../lib/sendEmail.js";
 import { StatusCodes } from "http-status-codes";
-import {
-  handleResponse,
-  handlePaginationResponse,
-} from "../../common/response.js";
+import { handleResponse } from "../../common/response.js";
 import { syncMasterDataForAuth } from "../../lib/masterDataSync.js";
 import User from "../../models/User.js";
 import Role from "../../models/Role.js";

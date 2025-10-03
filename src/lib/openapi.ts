@@ -354,20 +354,23 @@ const baseDocument = generator.generateDocument({
   tags: [
     {
       name: "Auth",
-      description: "Authentication endpoints - Register, login, password reset",
+      description:
+        "Authentication endpoints - Register, login, password reset. Rate limited: 5 attempts per 15 minutes for login/register, 3 attempts per hour for password reset.",
     },
     {
       name: "Users",
-      description: "User management endpoints - CRUD operations for users",
+      description:
+        "User management endpoints - CRUD operations for users. Rate limited: 200 requests per 15 minutes for read operations, 10 requests per hour for sensitive operations.",
     },
     {
       name: "Roles",
       description:
-        "Role management endpoints - CRUD operations for roles and permissions",
+        "Role management endpoints - CRUD operations for roles and permissions. Rate limited: 200 requests per 15 minutes for read operations, 10 requests per hour for sensitive operations.",
     },
     {
       name: "Posts",
-      description: "Post management endpoints - CRUD operations for posts",
+      description:
+        "Post management endpoints - CRUD operations for posts. Rate limited: 200 requests per 15 minutes for read/create operations, 10 requests per hour for delete operations.",
     },
     {
       name: "Master Data",
@@ -388,7 +391,8 @@ export const openApiDocument = {
       post: {
         tags: ["Auth"],
         summary: "Register a new user",
-        description: "Create a new user account with profile information",
+        description:
+          "Create a new user account with profile information. Rate limited to 5 attempts per 15 minutes per IP address.",
         requestBody: {
           required: true,
           content: {
@@ -434,7 +438,8 @@ export const openApiDocument = {
       post: {
         tags: ["Auth"],
         summary: "Login a user",
-        description: "Authenticate user with email and password",
+        description:
+          "Authenticate user with email and password. Rate limited to 5 attempts per 15 minutes per IP address.",
         requestBody: {
           required: true,
           content: {
@@ -475,7 +480,8 @@ export const openApiDocument = {
       post: {
         tags: ["Auth"],
         summary: "Request password reset",
-        description: "Send password reset link to user's email",
+        description:
+          "Send password reset link to user's email. Rate limited to 3 attempts per hour per IP address.",
         requestBody: {
           required: true,
           content: {

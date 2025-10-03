@@ -10,6 +10,7 @@ import { postRouter } from "./modules/post/post.router.js";
 import { setupSwagger } from "./lib/swagger.js";
 import { StatusCodes } from "http-status-codes";
 import { seedRBAC } from "./lib/rbacSeed.js";
+import { generalApiLimiter } from "./middleware/rateLimiting.middleware.js";
 
 dotenv.config();
 
@@ -19,6 +20,9 @@ const app = express();
 app.use(express.json());
 
 app.use(bodyParser.json({ limit: "10mb" }));
+
+// Apply general rate limiting to all API routes
+app.use("/api", generalApiLimiter);
 
 setupSwagger(app);
 

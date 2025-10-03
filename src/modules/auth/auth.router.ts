@@ -13,30 +13,33 @@ import {
   requestPasswordResetSchema,
   resetPasswordSchema,
 } from "./schemas/password-reset.schema.js";
+import {
+  authLimiter,
+  passwordResetLimiter,
+} from "../../middleware/rateLimiting.middleware.js";
 
 const router = express.Router();
 
-// Register endpoint
 router.post(
   "/register",
+  authLimiter,
   upload.single("profile_photo"),
   validateBody(registerSchema),
   registerUser
 );
 
-// Login endpoint
-router.post("/login", validateBody(loginSchema), loginUser);
+router.post("/login", authLimiter, validateBody(loginSchema), loginUser);
 
-// Request password reset endpoint
 router.post(
   "/request-password-reset",
+  passwordResetLimiter,
   validateBody(requestPasswordResetSchema),
   requestPasswordReset
 );
 
-// Reset password endpoint
 router.post(
   "/reset-password/:token",
+  passwordResetLimiter,
   validateBody(resetPasswordSchema),
   resetPassword
 );
