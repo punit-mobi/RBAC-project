@@ -47,6 +47,7 @@ export enum SuccessMessages {
 }
 
 export enum ErrorMessages {
+  TOO_MANY_REQUESTS = "Too many requests from this IP, please try again later.",
   ROLE_ASSIGNMENT_FAILED = "Role assignment failed - required roles not found",
   POST_NOT_FOUND = "Post not found",
   INSUFFICIENT_PERMISSIONS = "Insufficient permissions",

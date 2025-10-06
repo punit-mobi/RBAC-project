@@ -15,7 +15,7 @@ import {
 import Role from "../../models/Role.js";
 
 // get data of loggedin user
-// GET /api/users/me
+// GET /api/profile/me
 const getUser = async (req: Request, res: Response) => {
   try {
     const userId = req.userId;
@@ -30,7 +30,10 @@ const getUser = async (req: Request, res: Response) => {
       });
     }
     // finding user in db
-    const user = await User.findById(userId).select("-password");
+    const user = await User.findById(userId)
+      .select("-password")
+      .populate("role")
+      .lean();
     if (!user)
       return await handleResponse({
         res,
@@ -71,6 +74,7 @@ const getAllUsers = async (req: Request, res: Response) => {
       .select("-password")
       .skip(skip)
       .limit(limit)
+      .populate("role")
       .lean();
 
     // count total number of users
@@ -123,7 +127,10 @@ const getUserById = async (req: Request, res: Response) => {
       });
 
     // find user with id
-    const user = await User.findById(id).select("-password");
+    const user = await User.findById(id)
+      .select("-password")
+      .populate("role")
+      .lean();
     if (!user)
       return await handleResponse({
         res,
@@ -221,7 +228,6 @@ const updateUser = async (req: Request, res: Response) => {
 
     const validatedData = {
       ...validationResult.data,
-      profile_photo: req.file ? req.file.path : undefined,
     };
 
     // updating the user data
@@ -233,7 +239,7 @@ const updateUser = async (req: Request, res: Response) => {
       {
         new: true,
         runValidators: true,
-        select: "-password",
+        select: "first_name last_name email role is_admin is_active",
       }
     );
 
@@ -335,10 +341,10 @@ const deleteUser = async (req: Request, res: Response) => {
 };
 
 const assignRoleToUser = async (req: Request, res: Response) => {
-  const { id } = req.params; // user id
-  const { roleId } = req.body; // role id
+  const { id } = req.params;
+  const { role_id } = req.body;
   try {
-    if (!id || !roleId) {
+    if (!id || !role_id) {
       return await handleResponse({
         res,
         message: ErrorMessages.ID_REQUIRED,
@@ -361,7 +367,7 @@ const assignRoleToUser = async (req: Request, res: Response) => {
     }
 
     // find role by id
-    const role = await Role.findById(roleId);
+    const role = await Role.findById(role_id);
     if (!role) {
       return await handleResponse({
         res,
@@ -375,7 +381,7 @@ const assignRoleToUser = async (req: Request, res: Response) => {
       user.is_admin = true;
     } else user.is_admin = false;
     // assign role to user
-    user.role = roleId;
+    user.role = role_id;
     await user.save(); // save the user
 
     // picking the data to send in response

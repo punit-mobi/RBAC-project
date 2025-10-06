@@ -36,10 +36,6 @@ const UserSchema = z
       example: "john.doe@example.com",
       description: "User's email address",
     }),
-    profile_photo: z.string().url().optional().openapi({
-      example: "https://example.com/uploads/profile.jpg",
-      description: "URL to user's profile photo",
-    }),
     about: z.string().max(1000).optional().openapi({
       example:
         "I am a software developer passionate about creating amazing applications",
@@ -49,10 +45,20 @@ const UserSchema = z
       example: "123 Main St, California, USA",
       description: "User's address",
     }),
-    is_admin: z.boolean().default(false).openapi({
-      example: false,
-      description: "Whether the user has admin privileges",
-    }),
+    is_admin: z
+      .union([z.boolean(), z.string()])
+      .default(false)
+      .transform((val) => {
+        if (typeof val === "string") {
+          return val === "true" || val === "1";
+        }
+        return val;
+      })
+      .openapi({
+        example: false,
+        description:
+          "Whether the user has admin privileges (accepts boolean or string 'true'/'false')",
+      }),
     role: z.string().min(1).openapi({
       example: "64f1a2b3c4d5e6f7g8h9i0j2",
       description: "User's assigned role ID",
@@ -224,10 +230,20 @@ const EnhancedRegisterSchema = z
       example: "123 Main St, California, USA",
       description: "User's address",
     }),
-    is_admin: z.boolean().default(false).openapi({
-      example: false,
-      description: "Whether the user has admin privileges",
-    }),
+    is_admin: z
+      .union([z.boolean(), z.string()])
+      .default(false)
+      .transform((val) => {
+        if (typeof val === "string") {
+          return val === "true" || val === "1";
+        }
+        return val;
+      })
+      .openapi({
+        example: false,
+        description:
+          "Whether the user has admin privileges (accepts boolean or string 'true'/'false')",
+      }),
     gender: z.enum(["male", "female", "other"]).openapi({
       example: "male",
       description: "User's gender",
@@ -396,9 +412,6 @@ export const openApiDocument = {
         requestBody: {
           required: true,
           content: {
-            "multipart/form-data": {
-              schema: { $ref: "#/components/schemas/UserRegister" },
-            },
             "application/json": {
               schema: { $ref: "#/components/schemas/UserRegister" },
             },
@@ -925,7 +938,6 @@ export const openApiDocument = {
                     pattern: "^\\d{4}-\\d{2}-\\d{2}$",
                   },
                   education_qualification: { type: "string", maxLength: 200 },
-                  profile_photo: { type: "string", format: "binary" },
                 },
               },
             },
@@ -1003,6 +1015,220 @@ export const openApiDocument = {
           },
           "404": {
             description: "User not found",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ErrorResponse" },
+              },
+            },
+          },
+        },
+      },
+    },
+    "/api/v1/users/profile/me": {
+      get: {
+        tags: ["Users"],
+        summary: "Get current user profile",
+        description:
+          "Retrieve the profile information of the currently authenticated user",
+        security: [{ bearerAuth: [] }],
+        responses: {
+          "200": {
+            description: "User profile retrieved successfully",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    status: { type: "boolean", example: true },
+                    status_code: { type: "number", example: 200 },
+                    message: {
+                      type: "string",
+                      example: "User profile retrieved successfully",
+                    },
+                    data: { $ref: "#/components/schemas/User" },
+                  },
+                },
+              },
+            },
+          },
+          "401": {
+            description: "Unauthorized",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ErrorResponse" },
+              },
+            },
+          },
+          "404": {
+            description: "User not found",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ErrorResponse" },
+              },
+            },
+          },
+        },
+      },
+    },
+    "/api/v1/users/{id}/assign-role": {
+      patch: {
+        tags: ["Users"],
+        summary: "Assign role to user",
+        description:
+          "Assign a specific role to a user. Rate limited to 10 requests per hour.",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "string" },
+            description: "User ID",
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  role_id: {
+                    type: "string",
+                    description: "Role ID to assign to the user",
+                    example: "64f1a2b3c4d5e6f7g8h9i0j2",
+                  },
+                },
+                required: ["roleId"],
+              },
+            },
+          },
+        },
+        responses: {
+          "200": {
+            description: "Role assigned successfully",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    status: { type: "boolean", example: true },
+                    status_code: { type: "number", example: 200 },
+                    message: {
+                      type: "string",
+                      example: "Role assigned to user successfully",
+                    },
+                    data: {
+                      type: "object",
+                      properties: {
+                        first_name: { type: "string", example: "John" },
+                        last_name: { type: "string", example: "Doe" },
+                        email: {
+                          type: "string",
+                          example: "john.doe@example.com",
+                        },
+                        role: { type: "string", example: "admin" },
+                        is_admin: { type: "boolean", example: true },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          "400": {
+            description: "Bad request - Missing roleId or user ID",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ErrorResponse" },
+              },
+            },
+          },
+          "404": {
+            description: "User or role not found",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ErrorResponse" },
+              },
+            },
+          },
+          "401": {
+            description: "Unauthorized",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ErrorResponse" },
+              },
+            },
+          },
+        },
+      },
+    },
+    "/api/v1/users/{id}/remove-role": {
+      patch: {
+        tags: ["Users"],
+        summary: "Remove role from user",
+        description:
+          "Remove the assigned role from a user. Rate limited to 10 requests per hour.",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "string" },
+            description: "User ID",
+          },
+        ],
+        responses: {
+          "200": {
+            description: "Role removed successfully",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    status: { type: "boolean", example: true },
+                    status_code: { type: "number", example: 200 },
+                    message: {
+                      type: "string",
+                      example: "Role removed from user successfully",
+                    },
+                    data: {
+                      type: "object",
+                      properties: {
+                        first_name: { type: "string", example: "John" },
+                        last_name: { type: "string", example: "Doe" },
+                        email: {
+                          type: "string",
+                          example: "john.doe@example.com",
+                        },
+                        role: { type: "string", example: null },
+                        is_admin: { type: "boolean", example: false },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          "400": {
+            description: "Bad request - Missing user ID",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ErrorResponse" },
+              },
+            },
+          },
+          "404": {
+            description: "User not found",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ErrorResponse" },
+              },
+            },
+          },
+          "401": {
+            description: "Unauthorized",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/ErrorResponse" },

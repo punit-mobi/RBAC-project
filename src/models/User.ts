@@ -32,10 +32,6 @@ const userSchema = new mongoose.Schema(
       minLength: 3,
       maxLength: 60,
     },
-    profile_photo: {
-      type: String,
-      default: "",
-    },
     about: {
       type: String,
       maxLength: 500,

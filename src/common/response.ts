@@ -33,12 +33,19 @@ export async function handleResponse<T>({
     await logErrorToDB(req, error, message);
   }
 
-  res.status(status).json({
+  const response: HandleAPIResponse<T> = {
     status: isSuccess,
     status_code: status,
     message,
-    ...(isSuccess ? { data } : { error: error || null }),
-  } as HandleAPIResponse<T>);
+  };
+
+  if (isSuccess) {
+    response.data = data;
+  } else {
+    response.error = error;
+  }
+
+  res.status(status).json(response);
 }
 
 interface HandlePaginationResponseProps<T> {

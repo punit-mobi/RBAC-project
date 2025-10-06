@@ -9,7 +9,6 @@ import {
   removeRoleFromUser,
 } from "./user.controller.js";
 import { authMiddleware } from "../../middleware/auth.middleware.js";
-import upload from "../../lib/multer.js";
 import {
   dataOperationsLimiter,
   strictLimiter,
@@ -46,7 +45,6 @@ router.patch(
   "/:id",
   dataOperationsLimiter, // 100 requests per 15 minutes
   authMiddleware("users.update"),
-  upload.single("profile_photo"),
   updateUser
 );
 

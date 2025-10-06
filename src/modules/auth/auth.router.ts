@@ -5,7 +5,6 @@ import {
   requestPasswordReset,
   resetPassword,
 } from "./auth.controller.js";
-import upload from "../../lib/multer.js";
 import { validateBody } from "../../middleware/validation.middleware.js";
 import { registerSchema } from "./schemas/register.schema.js";
 import { loginSchema } from "./schemas/login.schema.js";
@@ -20,10 +19,10 @@ import {
 
 const router = express.Router();
 
+// Registration endpoint
 router.post(
   "/register",
   authLimiter,
-  upload.single("profile_photo"),
   validateBody(registerSchema),
   registerUser
 );

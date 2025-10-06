@@ -5,4 +5,15 @@ interface RegisterResponse {
   role: string;
 }
 
-export type { RegisterResponse };
+interface LoginUserResponse {
+  _id: string;
+  first_name: string;
+  email: string;
+  is_admin: boolean;
+  role: {
+    name: string;
+    permissions: string[];
+  } | null;
+}
+
+export type { RegisterResponse, LoginUserResponse };

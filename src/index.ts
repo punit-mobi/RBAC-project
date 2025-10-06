@@ -1,6 +1,5 @@
 import express, { type Request, type Response } from "express";
 import dotenv from "dotenv";
-import bodyParser from "body-parser";
 import { connectToDB } from "./lib/ConnectDB.js";
 import { authRouter } from "./modules/auth/auth.router.js";
 import { roleRouter } from "./modules/role/role.router.js";
@@ -17,9 +16,8 @@ dotenv.config();
 const app = express();
 
 // middlewares
-app.use(express.json());
-
-app.use(bodyParser.json({ limit: "10mb" }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Apply general rate limiting to all API routes
 app.use("/api", generalApiLimiter);
