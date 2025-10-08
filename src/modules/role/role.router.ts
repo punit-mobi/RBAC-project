@@ -12,18 +12,23 @@ import {
   dataOperationsLimiter,
   strictLimiter,
 } from "../../middleware/rateLimiting.middleware.js";
+import { createRoleSchema } from "./schemas/create.role.schema.js";
+import { validate } from "../../middleware/validation.middleware.js";
+import { idParamsSchema } from "../user/schema/params.schema.js";
+import { updateRoleSchema } from "./schemas/update.role.schema.js";
 
 const router = express.Router();
 
-// Create role endpoint with strict rate limiting
+// Create role
 router.post(
   "/",
   strictLimiter, // 10 requests per hour
   authMiddleware("roles.create"),
+  validate({ body: createRoleSchema }),
   createRole
 );
 
-// Get all roles endpoint with data operations rate limiting
+// Get all roles (validation not required)
 router.get(
   "/",
   dataOperationsLimiter, // 100 requests per 15 minutes
@@ -31,7 +36,7 @@ router.get(
   getAllRoles
 );
 
-// Get all permissions endpoint with data operations rate limiting
+// Get all permissions
 router.get(
   "/permissions",
   dataOperationsLimiter, // 100 requests per 15 minutes
@@ -39,27 +44,30 @@ router.get(
   getAllPermissions
 );
 
-// Get role by ID endpoint with data operations rate limiting
+// Get role by ID
 router.get(
   "/:id",
   dataOperationsLimiter, // 100 requests per 15 minutes
   authMiddleware("roles.view"),
+  validate({ params: idParamsSchema }),
   getRoleById
 );
 
-// Update role endpoint with strict rate limiting
+// Update role
 router.put(
   "/:id",
   strictLimiter, // 10 requests per hour
   authMiddleware("roles.update"),
+  validate({ body: updateRoleSchema, params: idParamsSchema }),
   updateRole
 );
 
-// Delete role endpoint with strict rate limiting
+// Delete role
 router.delete(
   "/:id",
   strictLimiter, // 10 requests per hour
   authMiddleware("roles.delete"),
+  validate({ params: idParamsSchema }),
   deleteRole
 );
 

@@ -572,7 +572,7 @@ export const openApiDocument = {
     "/api/v1/roles": {
       get: {
         tags: ["Roles"],
-        summary: "Get all roles",
+        summary: "Get all roles | role.view",
         description: "Retrieve a list of all roles",
         security: [{ bearerAuth: [] }],
         responses: {
@@ -610,7 +610,7 @@ export const openApiDocument = {
       },
       post: {
         tags: ["Roles"],
-        summary: "Create a new role",
+        summary: "Create a new role | role.create",
         description: "Create a new role with specified permissions",
         security: [{ bearerAuth: [] }],
         requestBody: {
@@ -655,7 +655,7 @@ export const openApiDocument = {
     "/api/v1/roles/{id}": {
       get: {
         tags: ["Roles"],
-        summary: "Get role by ID",
+        summary: "Get role by ID | role.view",
         description: "Retrieve a specific role by its ID",
         security: [{ bearerAuth: [] }],
         parameters: [
@@ -699,7 +699,7 @@ export const openApiDocument = {
       },
       put: {
         tags: ["Roles"],
-        summary: "Update role",
+        summary: "Update role | role.update",
         description: "Update an existing role's details and permissions",
         security: [{ bearerAuth: [] }],
         parameters: [
@@ -762,7 +762,7 @@ export const openApiDocument = {
       },
       delete: {
         tags: ["Roles"],
-        summary: "Delete role",
+        summary: "Delete role | role.delete",
         description: "Delete a role from the system",
         security: [{ bearerAuth: [] }],
         parameters: [
@@ -797,7 +797,7 @@ export const openApiDocument = {
     "/api/v1/users": {
       get: {
         tags: ["Users"],
-        summary: "Get all users",
+        summary: "Get all users | users.view",
         description: "Retrieve a paginated list of all users",
         security: [{ bearerAuth: [] }],
         parameters: [
@@ -865,7 +865,7 @@ export const openApiDocument = {
     "/api/v1/users/{id}": {
       get: {
         tags: ["Users"],
-        summary: "Get user by ID",
+        summary: "Get user by ID | users.view",
         description: "Retrieve a specific user by their ID",
         security: [{ bearerAuth: [] }],
         parameters: [
@@ -909,7 +909,7 @@ export const openApiDocument = {
       },
       patch: {
         tags: ["Users"],
-        summary: "Update user",
+        summary: "Update user | users.update",
         description: "Update an existing user's information",
         security: [{ bearerAuth: [] }],
         parameters: [
@@ -992,7 +992,7 @@ export const openApiDocument = {
       },
       delete: {
         tags: ["Users"],
-        summary: "Delete user",
+        summary: "Delete user | users.delete",
         description: "Delete a user from the system",
         security: [{ bearerAuth: [] }],
         parameters: [
@@ -1027,7 +1027,7 @@ export const openApiDocument = {
     "/api/v1/users/profile/me": {
       get: {
         tags: ["Users"],
-        summary: "Get current user profile",
+        summary: "Get current user profile | users.view",
         description:
           "Retrieve the profile information of the currently authenticated user",
         security: [{ bearerAuth: [] }],
@@ -1073,7 +1073,7 @@ export const openApiDocument = {
     "/api/v1/users/{id}/assign-role": {
       patch: {
         tags: ["Users"],
-        summary: "Assign role to user",
+        summary: "Assign role to user | users.update",
         description:
           "Assign a specific role to a user. Rate limited to 10 requests per hour.",
         security: [{ bearerAuth: [] }],
@@ -1166,7 +1166,7 @@ export const openApiDocument = {
     "/api/v1/users/{id}/remove-role": {
       patch: {
         tags: ["Users"],
-        summary: "Remove role from user",
+        summary: "Remove role from user | users.update",
         description:
           "Remove the assigned role from a user. Rate limited to 10 requests per hour.",
         security: [{ bearerAuth: [] }],
@@ -1241,7 +1241,7 @@ export const openApiDocument = {
     "/api/v1/posts": {
       get: {
         tags: ["Posts"],
-        summary: "Get all posts",
+        summary: "Get all posts | posts.view",
         description: "Retrieve a paginated list of all posts",
         security: [{ bearerAuth: [] }],
         parameters: [
@@ -1293,7 +1293,7 @@ export const openApiDocument = {
       },
       post: {
         tags: ["Posts"],
-        summary: "Create a new post",
+        summary: "Create a new post | posts.create",
         description: "Create a new post",
         security: [{ bearerAuth: [] }],
         requestBody: {
@@ -1345,7 +1345,7 @@ export const openApiDocument = {
     "/api/v1/posts/{id}": {
       get: {
         tags: ["Posts"],
-        summary: "Get post by ID",
+        summary: "Get post by ID | posts.view",
         description: "Retrieve a specific post by its ID",
         security: [{ bearerAuth: [] }],
         parameters: [
@@ -1389,7 +1389,7 @@ export const openApiDocument = {
       },
       delete: {
         tags: ["Posts"],
-        summary: "Delete post",
+        summary: "Delete post | posts.delete",
         description: "Delete a post from the system",
         security: [{ bearerAuth: [] }],
         parameters: [

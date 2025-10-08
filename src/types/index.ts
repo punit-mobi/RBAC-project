@@ -6,7 +6,6 @@ interface RegisterResponse {
 }
 
 interface LoginUserResponse {
-  _id: string;
   first_name: string;
   email: string;
   is_admin: boolean;

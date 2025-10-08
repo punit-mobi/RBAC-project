@@ -13,14 +13,19 @@ import {
   dataOperationsLimiter,
   strictLimiter,
 } from "../../middleware/rateLimiting.middleware.js";
+import { updateUserSchema } from "./schema/update.schema.js";
+import { validate } from "../../middleware/validation.middleware.js";
+import { idParamsSchema } from "./schema/params.schema.js";
+import { userListQuerySchema } from "./schema/query.schema.js";
 
 const router = express.Router();
 
-// Get all users endpoint with data operations rate limiting
+// Get all users endpoint with query validation
 router.get(
   "/",
   dataOperationsLimiter, // 100 requests per 15 minutes
   authMiddleware("users.view"),
+  validate({ query: userListQuerySchema }),
   getAllUsers
 );
 
@@ -29,6 +34,7 @@ router.get(
   "/:id",
   dataOperationsLimiter, // 100 requests per 15 minutes
   authMiddleware("users.view"),
+  validate({ params: idParamsSchema }),
   getUserById
 );
 
@@ -45,6 +51,7 @@ router.patch(
   "/:id",
   dataOperationsLimiter, // 100 requests per 15 minutes
   authMiddleware("users.update"),
+  validate({ body: updateUserSchema, params: idParamsSchema }),
   updateUser
 );
 
@@ -53,6 +60,7 @@ router.delete(
   "/:id",
   strictLimiter, // 10 requests per hour
   authMiddleware("users.delete"),
+  validate({ params: idParamsSchema }),
   deleteUser
 );
 

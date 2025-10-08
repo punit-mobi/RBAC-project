@@ -5,7 +5,7 @@ declare global {
   namespace Express {
     interface Request {
       userId?: ObjectId;
-      isAdmin?: Boolean;
+      isAdmin?: boolean;
       userPermissions?: string[];
     }
   }

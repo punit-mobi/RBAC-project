@@ -1,19 +1,28 @@
 import { z } from "zod";
 
 export const updateUserSchema = z.object({
-  first_name: z.string().min(3).max(20).optional(),
-  last_name: z.string().max(20).optional(),
-  about: z.string().max(500).optional(),
+  first_name: z
+    .string("First name is required")
+    .min(2, "First name must be at least 2 characters")
+    .max(50, "First name must not exceed 50 characters")
+    .optional(),
+  last_name: z
+    .string()
+    .max(50, "Last name must not exceed 50 characters")
+    .optional(),
+  about: z.string().max(500, "About must not exceed 500 characters").optional(),
   address: z
-    .object({
-      street_name: z.string().max(100).optional(),
-      pincode: z.number().optional(),
-      state: z.string().optional(),
-      country: z.string().optional(),
+    .string()
+    .max(200, "Address must not exceed 200 characters")
+    .optional(),
+  gender: z
+    .enum(["male", "female", "other"], {
+      message: "Gender must be either 'male', 'female', or 'other'",
     })
     .optional(),
-  gender: z.enum(["male", "female"]).optional(),
   date_of_birth: z.string().optional(),
-  education_qualification: z.string().optional(),
-  role: z.string().optional(),
+  education_qualification: z
+    .string()
+    .max(200, "Education qualification must not exceed 200 characters")
+    .optional(),
 });

@@ -1,12 +1,7 @@
 import type { Request, Response } from "express";
 import User from "../../models/User.js";
-import {
-  ErrorMessages,
-  Status,
-  SuccessMessages,
-} from "../../common/messages.js";
+import { ErrorMessages, SuccessMessages } from "../../common/messages.js";
 import mongoose from "mongoose";
-import { updateUserSchema } from "./schema/update.schema.js";
 import { StatusCodes } from "http-status-codes";
 import {
   handleResponse,
@@ -31,7 +26,7 @@ const getUser = async (req: Request, res: Response) => {
     }
     // finding user in db
     const user = await User.findById(userId)
-      .select("-password")
+      .select("-password -_id -__v -created_at -updated_at")
       .populate("role")
       .lean();
     if (!user)
@@ -65,13 +60,17 @@ const getUser = async (req: Request, res: Response) => {
 // GET /api/v1/users/all
 const getAllUsers = async (req: Request, res: Response) => {
   try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
+    // Use validated query data if available, otherwise fallback to req.query
+    const validatedQuery = (req as any).validatedQuery;
+    const page =
+      validatedQuery?.page || parseInt(req.query.page as string) || 1;
+    const limit =
+      validatedQuery?.limit || parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * limit; // for pagination
 
     // finding all user
     const allUsers = await User.find({})
-      .select("-password")
+      .select("-password -_id -__v -created_at -updated_at")
       .skip(skip)
       .limit(limit)
       .populate("role")
@@ -90,7 +89,6 @@ const getAllUsers = async (req: Request, res: Response) => {
 
     // success response
     await handlePaginationResponse({
-      // todo use handlePaginationResponse here
       res,
       data: allUsers,
       limit,
@@ -113,7 +111,9 @@ const getAllUsers = async (req: Request, res: Response) => {
 // get users by id
 // GET /api/v1/users/:id
 const getUserById = async (req: Request, res: Response) => {
-  const { id } = req.params;
+  // Use validated params data if available, otherwise fallback to req.params
+  const validatedParams = (req as any).validatedParams;
+  const { id } = validatedParams || req.params;
 
   try {
     // check if id exist in params
@@ -128,7 +128,7 @@ const getUserById = async (req: Request, res: Response) => {
 
     // find user with id
     const user = await User.findById(id)
-      .select("-password")
+      .select("-password -_id -__v -created_at -updated_at")
       .populate("role")
       .lean();
     if (!user)
@@ -163,8 +163,10 @@ const getUserById = async (req: Request, res: Response) => {
 // PATCH - /api/user/update/:id
 const updateUser = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const { userId, isAdmin: isUserAdmin } = req; // getting from request set by middleware
+    // Use validated data if available, otherwise fallback to req properties
+    const validatedParams = (req as any).validatedParams;
+    const { id } = validatedParams || req.params;
+    const { userId, isAdmin: isUserAdmin } = req;
 
     // if user id not found in request
     if (!userId)
@@ -187,11 +189,14 @@ const updateUser = async (req: Request, res: Response) => {
       });
     }
 
+    // validated by from middleware
+    const bodyData = req.body;
+
     // address type check due to swagger error - with proper validation
-    if (req.body.address && typeof req.body.address === "string") {
+    if (bodyData.address && typeof bodyData.address === "string") {
       try {
         // Validate JSON structure before parsing
-        const parsedAddress = JSON.parse(req.body.address);
+        const parsedAddress = JSON.parse(bodyData.address);
         if (typeof parsedAddress !== "object" || Array.isArray(parsedAddress)) {
           return await handleResponse({
             res,
@@ -201,7 +206,7 @@ const updateUser = async (req: Request, res: Response) => {
             req,
           });
         }
-        req.body.address = parsedAddress;
+        bodyData.address = parsedAddress;
       } catch (error) {
         return await handleResponse({
           res,
@@ -213,33 +218,16 @@ const updateUser = async (req: Request, res: Response) => {
       }
     }
 
-    // validating reqbody data
-    const validationResult = updateUserSchema.safeParse(req.body);
-
-    if (!validationResult.success) {
-      return await handleResponse({
-        res,
-        message: ErrorMessages.VALIDATION_FAILED,
-        status: StatusCodes.BAD_REQUEST,
-        error: validationResult.error,
-        req,
-      });
-    }
-
-    const validatedData = {
-      ...validationResult.data,
-    };
-
     // updating the user data
     const updatedUser = await User.findByIdAndUpdate(
       id,
       {
-        $set: validatedData,
+        $set: bodyData,
       },
       {
         new: true,
         runValidators: true,
-        select: "first_name last_name email role is_admin is_active",
+        select: "-password -_id -__v -created_at -updated_at",
       }
     );
 
@@ -274,7 +262,9 @@ const updateUser = async (req: Request, res: Response) => {
 // Delete the user account, normal user can delete his own, admins can delete anyone's
 // DELETE - api/user/delete/:id
 const deleteUser = async (req: Request, res: Response) => {
-  const { id } = req.params;
+  // Use validated params data if available, otherwise fallback to req.params
+  const validatedParams = (req as any).validatedParams;
+  const { id } = validatedParams || req.params;
   const { userId, isAdmin } = req;
 
   if (!id || !userId)

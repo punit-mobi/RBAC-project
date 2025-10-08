@@ -10,6 +10,7 @@ import { setupSwagger } from "./lib/swagger.js";
 import { StatusCodes } from "http-status-codes";
 import { seedRBAC } from "./lib/rbacSeed.js";
 import { generalApiLimiter } from "./middleware/rateLimiting.middleware.js";
+import { errorMiddleware } from "./middleware/error.middleware.js";
 
 dotenv.config();
 
@@ -42,8 +43,8 @@ app.use("/api/v1/users", userRouter);
 app.use("/api/v1/posts", postRouter);
 //todo app.use("/api/v1/master-data", authMiddleware, masterDataRouter);
 
-// todo error middleware
-// app.use(errorMiddleware);
+// middleware to handle unexpected errors
+app.use(errorMiddleware);
 
 // connect to db & server
 const port = process.env.PORT || 4040;

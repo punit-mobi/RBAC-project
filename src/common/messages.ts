@@ -11,6 +11,7 @@ export enum Status {
 }
 
 export enum SuccessMessages {
+  PERMISSIONS_RETRIEVED = "Permissions retrieved successfully",
   ROLE_REMOVED_FROM_USER = "Role removed from user successfully",
   ROLE_ASSIGNED_TO_USER = "Role assigned to user successfully",
   POSTS_RETRIEVED = "Posts retrieved successfully",
@@ -47,6 +48,7 @@ export enum SuccessMessages {
 }
 
 export enum ErrorMessages {
+  DATABASE_CONNECTION_FAILED = "Database connection failed",
   TOO_MANY_REQUESTS = "Too many requests from this IP, please try again later.",
   ROLE_ASSIGNMENT_FAILED = "Role assignment failed - required roles not found",
   POST_NOT_FOUND = "Post not found",

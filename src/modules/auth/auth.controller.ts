@@ -1,4 +1,3 @@
-// Schemas are now used in router middleware, not needed in controller
 import type { Request, Response } from "express";
 
 import bcrypt from "bcrypt";
@@ -9,7 +8,7 @@ import Token from "../../models/Token.js";
 import { sendEmail } from "../../lib/sendEmail.js";
 import { StatusCodes } from "http-status-codes";
 import { handleResponse } from "../../common/response.js";
-import { syncMasterDataForAuth } from "../../lib/masterDataSync.js";
+// import { syncMasterDataForAuth } from "../../lib/masterDataSync.js";
 import User from "../../models/User.js";
 import Role from "../../models/Role.js";
 import { RegisterResponse, LoginUserResponse } from "../../types/index.js";
@@ -69,6 +68,14 @@ const registerUser = async (req: Request, res: Response) => {
     //create the user
     const newUser = await User.create({
       ...req.body,
+      first_name: req.body.first_name.trim(),
+      last_name: req.body.last_name?.trim(),
+      email: req.body.email.trim().toLowerCase(),
+      about: req.body.about?.trim(),
+      address: req.body.address?.trim(),
+      gender: req.body.gender.trim().toLowerCase(),
+      date_of_birth: req.body.date_of_birth?.trim(),
+      education_qualification: req.body.education_qualification?.trim(),
       password: hashedPassword,
       is_active: true,
       role: roleId,
@@ -164,16 +171,18 @@ const loginUser = async (req: Request, res: Response) => {
 
     // selecting field to send in response
     const sendableData: LoginUserResponse = {
-      _id: userWithoutPassword._id.toString(),
       first_name: userWithoutPassword.first_name,
       email: userWithoutPassword.email,
       is_admin: userWithoutPassword.is_admin,
-      role: userWithoutPassword.role
-        ? {
-            name: userWithoutPassword.role?.name || "",
-            permissions: userWithoutPassword.role?.permissions || [],
-          }
-        : null,
+      role:
+        userWithoutPassword.role &&
+        typeof userWithoutPassword.role === "object" &&
+        "name" in userWithoutPassword.role
+          ? {
+              name: (userWithoutPassword.role as any).name || "",
+              permissions: (userWithoutPassword.role as any).permissions || [],
+            }
+          : null,
     };
 
     // Attempt to sync master data

@@ -79,6 +79,7 @@ export const authLimiter = rateLimit({
         endpoint: req.path,
         ip: req.ip,
       },
+      req,
     });
     // res.status(StatusCodes.TOO_MANY_REQUESTS).json({
     //   status: false,

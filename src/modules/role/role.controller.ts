@@ -5,26 +5,12 @@ import { StatusCodes } from "http-status-codes";
 import { handleResponse } from "../../common/response.js";
 import { ErrorMessages, SuccessMessages } from "../../common/messages.js";
 import Role from "../../models/Role.js";
-import { z } from "zod";
-import { getRefId } from "@asteasolutions/zod-to-openapi";
 
 // Create a new role
 // POST - /api/v1/roles
 const createRole = async (req: Request, res: Response) => {
   try {
-    const parsedData = createRoleSchema.safeParse(req.body);
-
-    if (!parsedData.success) {
-      return await handleResponse({
-        res,
-        message: ErrorMessages.VALIDATION_FAILED,
-        status: StatusCodes.BAD_REQUEST,
-        error: parsedData.error,
-        req,
-      });
-    }
-
-    const { name, description, permissions } = parsedData.data;
+    const { name, description, permissions } = req.body;
 
     // Check if role already exists
     const existingRole = await Role.findOne({ name });
@@ -39,23 +25,23 @@ const createRole = async (req: Request, res: Response) => {
     }
 
     // Validate permission format (resource.action)
-    const validPermissionPattern =
-      /^(users|posts|roles)\.(view|create|update|delete)$/;
-    const invalidPermissions = permissions.filter(
-      (perm) => !validPermissionPattern.test(perm)
-    );
+    // const validPermissionPattern =
+    //   /^(users|posts|roles)\.(view|create|update|delete)$/;
+    // const invalidPermissions = permissions.filter(
+    //   (perm: string) => !validPermissionPattern.test(perm)
+    // );
 
-    if (invalidPermissions.length > 0) {
-      return await handleResponse({
-        res,
-        message: `Invalid permission format: ${invalidPermissions.join(
-          ", "
-        )}. Must be in format: resource.action`,
-        status: StatusCodes.BAD_REQUEST,
-        error: null,
-        req,
-      });
-    }
+    // if (invalidPermissions.length > 0) {
+    //   return await handleResponse({
+    //     res,
+    //     message: `Invalid permission format: ${invalidPermissions.join(
+    //       ", "
+    //     )}. Must be in format: resource.action`,
+    //     status: StatusCodes.BAD_REQUEST,
+    //     error: null,
+    //     req,
+    //   });
+    // }
     // create a role in the database
     const newRole = await Role.create({
       name,
@@ -66,7 +52,7 @@ const createRole = async (req: Request, res: Response) => {
     await handleResponse({
       res,
       data: newRole,
-      message: "Role created successfully",
+      message: SuccessMessages.ROLE_CREATED,
       status: StatusCodes.CREATED,
     });
   } catch (error) {
@@ -84,12 +70,24 @@ const createRole = async (req: Request, res: Response) => {
 // GET - /api/v1/roles
 const getAllRoles = async (req: Request, res: Response) => {
   try {
-    const roles = await Role.find({ is_active: true }).select("-__v");
+    const roles = await Role.find({}).select(
+      "-__v -_id -created_at -updated_at"
+    );
+
+    if (!roles) {
+      return await handleResponse({
+        res,
+        message: ErrorMessages.ROLE_NOT_FOUND,
+        status: StatusCodes.NOT_FOUND,
+        error: null,
+        req,
+      });
+    }
 
     await handleResponse({
       res,
       data: roles,
-      message: "Roles retrieved successfully",
+      message: SuccessMessages.ROLES_RETRIEVED,
       status: StatusCodes.OK,
     });
   } catch (error) {
@@ -107,13 +105,14 @@ const getAllRoles = async (req: Request, res: Response) => {
 // GET - /api/v1/roles/:id
 const getRoleById = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const role = await Role.findById(id).select("-__v");
+    const validatedParams = (req as any).validatedParams;
+    const { id } = validatedParams || req.params;
+    const role = await Role.findById(id).select("-__v -_id -created_at");
 
     if (!role) {
       return await handleResponse({
         res,
-        message: "Role not found",
+        message: ErrorMessages.ROLE_NOT_FOUND,
         status: StatusCodes.NOT_FOUND,
         error: null,
         req,
@@ -123,7 +122,7 @@ const getRoleById = async (req: Request, res: Response) => {
     await handleResponse({
       res,
       data: role,
-      message: "Role retrieved successfully",
+      message: SuccessMessages.ROLE_RETRIEVED,
       status: StatusCodes.OK,
     });
   } catch (error) {
@@ -141,51 +140,40 @@ const getRoleById = async (req: Request, res: Response) => {
 // PUT - /api/v1/roles/:id
 const updateRole = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const parsedData = updateRoleSchema.safeParse(req.body);
+    const validatedParams = (req as any).validatedParams;
+    const { id } = validatedParams || req.params;
+    const updateData = req.body;
 
-    if (!parsedData.success) {
-      return await handleResponse({
-        res,
-        message: ErrorMessages.VALIDATION_FAILED,
-        status: StatusCodes.BAD_REQUEST,
-        error: parsedData.error,
-        req,
-      });
-    }
+    // // If updating permissions, validate format
+    // if (updateData.permissions) {
+    //   const validPermissionPattern =
+    //     /^(users|posts|roles)\.(view|create|update|delete)$/;
+    //   const invalidPermissions = updateData.permissions.filter(
+    //     (perm) => !validPermissionPattern.test(perm)
+    //   );
 
-    const updateData = parsedData.data;
-
-    // If updating permissions, validate format
-    if (updateData.permissions) {
-      const validPermissionPattern =
-        /^(users|posts|roles)\.(view|create|update|delete)$/;
-      const invalidPermissions = updateData.permissions.filter(
-        (perm) => !validPermissionPattern.test(perm)
-      );
-
-      if (invalidPermissions.length > 0) {
-        return await handleResponse({
-          res,
-          message: `Invalid permission format: ${invalidPermissions.join(
-            ", "
-          )}. Must be in format: resource.action`,
-          status: StatusCodes.BAD_REQUEST,
-          error: null,
-          req,
-        });
-      }
-    }
+    //   if (invalidPermissions.length > 0) {
+    //     return await handleResponse({
+    //       res,
+    //       message: `Invalid permission format: ${invalidPermissions.join(
+    //         ", "
+    //       )}. Must be in format: resource.action`,
+    //       status: StatusCodes.BAD_REQUEST,
+    //       error: null,
+    //       req,
+    //     });
+    //   }
+    // }
 
     const updatedRole = await Role.findByIdAndUpdate(id, updateData, {
       new: true,
       runValidators: true,
-    }).select("-__v");
+    }).select("-__v -_id -created_at");
 
     if (!updatedRole) {
       return await handleResponse({
         res,
-        message: "Role not found",
+        message: ErrorMessages.ROLE_NOT_FOUND,
         status: StatusCodes.NOT_FOUND,
         error: null,
         req,
@@ -195,7 +183,7 @@ const updateRole = async (req: Request, res: Response) => {
     await handleResponse({
       res,
       data: updatedRole,
-      message: "Role updated successfully",
+      message: SuccessMessages.ROLE_UPDATED,
       status: StatusCodes.OK,
     });
   } catch (error) {
@@ -213,18 +201,19 @@ const updateRole = async (req: Request, res: Response) => {
 // DELETE - /api/v1/roles/:id
 const deleteRole = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const validatedParams = (req as any).validatedParams;
+    const { id } = validatedParams || req.params;
 
     const deletedRole = await Role.findByIdAndUpdate(
       id,
       { is_active: false },
       { new: true }
-    ).select("-__v");
+    ).select("-__v -_id -created_at");
 
     if (!deletedRole) {
       return await handleResponse({
         res,
-        message: "Role not found",
+        message: ErrorMessages.ROLE_NOT_FOUND,
         status: StatusCodes.NOT_FOUND,
         error: null,
         req,
@@ -234,7 +223,7 @@ const deleteRole = async (req: Request, res: Response) => {
     await handleResponse({
       res,
       data: deletedRole,
-      message: "Role deleted successfully",
+      message: SuccessMessages.ROLE_DELETED,
       status: StatusCodes.OK,
     });
   } catch (error) {
